@@ -1,0 +1,51 @@
+import logging
+from telegram import Update
+from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
+
+# ====== CONFIG ======
+BOT_TOKEN = "8991179110:AAHeJaigmC-MMO-waCjanHILOAJbQ8rB-fw"
+CHANNEL_USERNAME = "@pagohconfess"
+
+logging.basicConfig(level=logging.INFO)
+
+# Start command
+async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    await update.message.reply_text(
+        "👋 Welcome to Anonymous Confession Bot!\n\n"
+        "Just send me anything, and I will post it anonymously."
+    )
+
+# Handle all messages
+async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    msg = update.message
+
+    # Anonymous formatting
+    text = f"📩 Anonymous Confession\n\n{msg.text if msg.text else ''}"
+
+    try:
+        # Send to channel
+        await context.bot.send_message(
+            chat_id=CHANNEL_USERNAME,
+            text=text,
+            parse_mode="Markdown"
+        )
+
+        await msg.reply_text("✅ Your confession has been posted anonymously!")
+
+    except Exception as e:
+        await msg.reply_text("❌ Failed to post confession.")
+        print(e)
+
+
+def main():
+    app = Application.builder().token(BOT_TOKEN).build()
+
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+
+    print("Bot is running...")
+    app.run_polling()
+
+
+if _name_ == "_main_":
+    main()
